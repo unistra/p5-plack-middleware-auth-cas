@@ -1,23 +1,41 @@
 #! /usr/bin/perl
 use Modern::Perl;
-use YAML;
-use Plack::Test; 
-use Plack::Builder;
-use HTTP::Request::Common;
-use IO::All;
+# use YAML;
+# use IO::All;
 
-my $app = builder {
-    # enable qw( Auth::CAS base https://cas.unistra.fr );
+use Plack::Builder; 
+use Plack::Test; 
+use HTTP::Request::Common;
+use Test::More;
+
+# Inspired by: 
+    # Plack::Middleware::Auth::Htpasswd 
+    # Plack::Middleware::Auth::CAS
+    # Plack::Middleware::Auth::Form
+    # Plack::Middleware::Auth::Basic 
+
+my $app = builder { 
+
+    enable
+    qw( Plack::Middleware::Auth::CAS
+        server  https://cas.unistra.fr
+        service http://filsender.unistra.fr
+        logout /logout );
+
     sub {
-        [ 200
+        [ 201
         , ["Content-Type", "text/plain"]
-        , ["You found it, Arthur!" ] ]
-    }
+        , ["hello Test::More"] ]
+    } 
+
 };
 
-test_psgi $app, sub {
-    my $cb = shift;
-    my $res = $cb->(GET '/');
-    io('/tmp/debug-struct') < YAML::Dump $res;
-    1
-}
+my $test = Plack::Test->create($app);
+my $res = $test->request(GET "/");
+
+is
+( ($res->code)
+, 302
+, "result content is what was passed" );
+
+done_testing;
