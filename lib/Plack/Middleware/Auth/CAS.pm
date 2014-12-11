@@ -21,6 +21,13 @@ URL of the application using CAS Authentication.
 
 This url will trigger the logout URL of the CAS server.
 
+=head1 TODO
+
+    * Make it work with Auth::Session
+        (update eg/ to show the login into the page)
+    * implement CAS logout
+    * how about exporting/importing attributes 
+
 =cut
 
 # ABSTRACT: PSGI CAS Authentication Middleware
@@ -45,6 +52,8 @@ sub unauthorized {
 # method call ($env) {
 sub call {
     my ( $self, $env ) = @_;
+    use Plack::Session;
+    #my $session = Plack::Session->new( $env );
 
     # those are 2 valid examples of reply
     # return Plack::Response->new(404)->finalize;
@@ -69,14 +78,18 @@ sub call {
         # here i break everything done by other middleware!
         # fuck you web developpers ! 
         
-        my $r = Plack::Response->new;
-        $r->redirect( $cas->login_url($self->service) );
-        return $r->finalize; 
+        my $response = Plack::Response->new;
+        $response->redirect( $cas->login_url($self->service) );
+        return $response->finalize; 
 
     };
 
     my $r = $cas->service_validate( $self->service, $ticket );
-    if ( $r->is_success ) { $self->app->($env) }
+    if ( $r->is_success ) {
+        #$session->set( user => $r->user );
+
+        $self->app->($env)
+    }
     else { $self->unauthorized } 
 
 }
