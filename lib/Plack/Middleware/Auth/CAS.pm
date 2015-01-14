@@ -52,7 +52,7 @@ sub unauthorized {
 # method call ($env) {
 sub call {
     my ( $self, $env ) = @_;
-    use Plack::Session;
+    #use Plack::Session;
     #my $session = Plack::Session->new( $env );
 
     # those are 2 valid examples of reply
