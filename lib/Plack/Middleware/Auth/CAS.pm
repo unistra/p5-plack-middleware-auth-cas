@@ -49,9 +49,16 @@ sub unauthorized {
     , [ $body ] ];
 }
 
-# method call ($env) {
+sub _logout {
+    my ( $env ) = @_;
+    Plack::Session->new( $env )->expire_session_id;
+}
+
 sub call {
     my ( $self, $env ) = @_;
+    $$env{REQUEST_METHOD} eq "POST" && return _logout $env;
+
+
     #use Plack::Session;
     #my $session = Plack::Session->new( $env );
 

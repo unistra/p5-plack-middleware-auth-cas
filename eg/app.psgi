@@ -4,7 +4,6 @@ use Plack::Builder;
 use Method::Signatures;
 use re '/xms';
 
-
 func accueil ( $env ) {
     html { 
         head {
@@ -34,23 +33,27 @@ func accueil ( $env ) {
     }
 } 
 
-func info ( $env ) {
-    html { 
-        head {
-            title {"cas example"}
-        }, 
-        body { "pouet", 
-            $env->{PATH_INFO}
-            , 
-        }, 
-    }
-}
+# func info ( $env ) {
+#     html { 
+#         head {
+#             title {"cas example"}
+#         }, 
+#         body { "pouet", 
+#             $env->{PATH_INFO}
+#             , 
+#         }, 
+#     }
+# }
 
 
 builder {
+
+
     enable qw( Static root static/ )
-    , path => qr{[.] ( js | png | jpg )$}; 
-    enable qw( Session store File ); 
+    , path => qr{[.] ( js | png | jpg )$};
+
+    enable qw( Session store File );
+
     enable
     qw( Auth::CAS
         server  https://cas.unistra.fr/cas/
@@ -60,6 +63,8 @@ builder {
 
     sub {
         my ( $env ) = @_;
+        my $r = Plack::Session->new( $env);
+
         [ 200
         , ["Content-Type", "text/html"]
         , [ $env->{PATH_INFO} =~ /ac/ ? accueil $env : accueil $env ] ]
